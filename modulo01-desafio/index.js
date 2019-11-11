@@ -14,6 +14,19 @@ server.use((req, res, next) => {
 const projects = [];
 
 /**
+ * Middleware que checa se o projeto existe
+ */
+function checkProjectExists(req, res, next) {
+  const { id } = req.params;
+  const project = projects.find( p => p.id == id );
+  if(!project) {
+    return res.status(400)
+    .json({ error: 'Project does not exists.'});    
+  }
+  return next();
+}
+
+/**
  * Retorna todos os projetos
  */
 server.get('/projects', (req, res) => res.json(projects) );
@@ -38,7 +51,7 @@ server.post('/projects', (req, res) => {
  * Request body: title
  * Altera o título do projeto com o id presente nos parâmetros da rota.
  */
-server.put('/projects/:id', (req, res) => {
+server.put('/projects/:id', checkProjectExists, (req, res) => {
   const { id } = req.params;
   const { title } = req.body;
 
@@ -52,20 +65,20 @@ server.put('/projects/:id', (req, res) => {
  * Route params: id
  * Remove um projeto
  */
-server.delete('/projects/:id', (req, res) => {
+server.delete('/projects/:id', checkProjectExists, (req, res) => {
   const { id } = req.params;
   const projectIndex = projects.findIndex( p => p.id == id );
   projects.splice(projectIndex, 1);
 
   return res.send();
-})
+});
 
 /**
  * Route params: id
  * Request body: title
  * Adiciona uma task ao projeto
  */
-server.post('/projects/:id/tasks', (req, res) => {
+server.post('/projects/:id/tasks', checkProjectExists, (req, res) => {
   const { id } = req.params;
   const { title } = req.body;
   const project = projects.find( p => p.id == id );
