@@ -13,10 +13,65 @@ server.use((req, res, next) => {
 
 const projects = [];
 
+/**
+ * Retorna todos os projetos
+ */
 server.get('/projects', (req, res) => res.json(projects) );
+
+/**
+ * Resquest body: id, title
+ * Adiciona um projeto
+ */
 server.post('/projects', (req, res) => {
-  projects.push({...req.body});
+  const {id, title} = req.body;
+  const project = {
+    id, 
+    title,
+    tasks: []
+  }
+  projects.push(project);
   return res.json(projects);
+});
+
+/**
+ * Route params: id
+ * Request body: title
+ * Altera o título do projeto com o id presente nos parâmetros da rota.
+ */
+server.put('/projects/:id', (req, res) => {
+  const { id } = req.params;
+  const { title } = req.body;
+
+  const project = projects.find( p => p.id == id );
+  project.title = title;
+
+  return res.json(project);
+});
+
+/**
+ * Route params: id
+ * Remove um projeto
+ */
+server.delete('/projects/:id', (req, res) => {
+  const { id } = req.params;
+  const projectIndex = projects.findIndex( p => p.id == id );
+  projects.splice(projectIndex, 1);
+
+  return res.send();
+})
+
+/**
+ * Route params: id
+ * Request body: title
+ * Adiciona uma task ao projeto
+ */
+server.post('/projects/:id/tasks', (req, res) => {
+  const { id } = req.params;
+  const { title } = req.body;
+  const project = projects.find( p => p.id == id );
+  project.tasks.push(title);
+
+  return res.json(project);
 });
 
 server.listen(3000);
